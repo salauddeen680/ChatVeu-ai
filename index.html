@@ -13,14 +13,18 @@
             theme: {
                 extend: {
                     colors: {
-                        gray: { 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#030712' }
+                        gray: { 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#030712' },
+                        brand: { 500: '#2563eb', 600: '#1d4ed8' }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
         }
     </script>
 
-    <!-- External Libraries (Lucide, Marked, DOMPurify) -->
+    <!-- External Libraries -->
     <script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
@@ -38,8 +42,8 @@
         /* Loader */
         #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background-color: #ffffff; z-index: 9999; flex-direction: column; gap: 1rem; transition: opacity 0.4s ease; }
         html.dark #loading { background-color: #111827; }
-        .spinner { width: 36px; height: 36px; border: 4px solid #e5e7eb; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
-        html.dark .spinner { border-color: #374151; border-top-color: #60a5fa; }
+        .spinner { width: 36px; height: 36px; border: 4px solid #e5e7eb; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        html.dark .spinner { border-color: #374151; border-top-color: #3b82f6; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Markdown Styling */
@@ -50,6 +54,7 @@
         .markdown-body a { color: #3b82f6; text-decoration: underline; }
         .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
         .markdown-body ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .markdown-body strong { font-weight: 600; color: inherit; }
 
         /* Layout */
         .app-container { display: flex; height: 100dvh; width: 100%; overflow: hidden; }
@@ -67,6 +72,10 @@
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* Voice Mic Animation */
+        .mic-active { color: #ef4444 !important; animation: pulse-mic 1.5s infinite; }
+        @keyframes pulse-mic { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -88,8 +97,13 @@
         <!-- Sidebar -->
         <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-72 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col h-full">
             <div class="p-4 flex items-center justify-between">
-                <h1 class="text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                    <i data-lucide="sparkles" class="w-5 h-5 text-blue-500"></i> ChatVeu
+                <h1 class="text-xl font-bold tracking-tight text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <!-- Premium Custom Logo -->
+                    <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7 text-brand-500">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor" opacity="0.8"/>
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ChatVeu
                 </h1>
                 <button id="close-sidebar" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 lg:hidden focus:outline-none">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -97,7 +111,7 @@
             </div>
 
             <div class="px-4 pb-2">
-                <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-500 rounded-xl text-sm font-medium transition-colors shadow-sm focus:outline-none">
+                <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-brand-500 hover:text-brand-500 rounded-xl text-sm font-medium transition-colors shadow-sm focus:outline-none">
                     <i data-lucide="plus" class="w-4 h-4"></i> New Chat
                 </button>
             </div>
@@ -105,7 +119,7 @@
             <div class="px-4 py-2">
                 <div class="relative">
                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input type="text" id="chat-search" placeholder="Search chats..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
+                    <input type="text" id="chat-search" placeholder="Search chats..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white">
                 </div>
             </div>
 
@@ -127,29 +141,43 @@
                     </button>
                     <h2 id="current-chat-title" class="font-medium text-gray-900 dark:text-gray-100 truncate">New Chat</h2>
                 </div>
-                <button id="header-settings-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden focus:outline-none shrink-0">
-                    <i data-lucide="settings" class="w-5 h-5 text-gray-500"></i>
-                </button>
+                <div class="flex items-center gap-1 sm:gap-2">
+                    <!-- Voice Mode Toggle -->
+                    <button id="voice-toggle-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none text-gray-400 transition-colors" title="Toggle AI Voice Response">
+                        <i data-lucide="volume-x" id="voice-icon" class="w-5 h-5"></i>
+                    </button>
+                    <button id="header-settings-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden focus:outline-none shrink-0">
+                        <i data-lucide="settings" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
             </header>
 
             <div id="chat-container" class="chat-area px-4 sm:px-6 lg:px-8 py-6 w-full max-w-4xl mx-auto flex flex-col gap-6">
                 <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center mt-10 sm:mt-20">
-                    <div class="w-16 h-16 bg-blue-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                        <i data-lucide="sparkles" class="w-8 h-8 text-blue-500"></i>
+                    <div class="w-16 h-16 bg-blue-50 dark:bg-brand-900/20 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-brand-100 dark:border-brand-800 text-brand-500">
+                        <svg viewBox="0 0 24 24" fill="none" class="w-8 h-8">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor" opacity="0.8"/>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                     </div>
                     <h2 class="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-2">How can I help you today?</h2>
-                    <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md">Enter a prompt below to start a conversation with Google Gemini.</p>
+                    <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md">Type a message or tap the mic to start talking with AI.</p>
                 </div>
                 <div id="messages-wrapper" class="flex flex-col gap-6 pb-4"></div>
             </div>
 
             <div class="p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-gray-950 dark:via-gray-950 shrink-0 pb-[calc(1rem+var(--safe-area-inset-bottom))]">
-                <div class="max-w-3xl mx-auto relative rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all flex flex-col">
+                <div class="max-w-3xl mx-auto relative rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm focus-within:ring-2 focus-within:ring-brand-500 transition-all flex flex-col">
                     <div id="error-toast" class="hidden text-xs text-red-500 px-4 pt-2 font-medium"></div>
-                    <textarea id="message-input" rows="1" class="w-full bg-transparent border-0 px-4 py-3.5 pr-14 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-0 sm:text-sm min-h-[52px] max-h-[150px]" placeholder="Message ChatVeu..."></textarea>
+                    <textarea id="message-input" rows="1" class="w-full bg-transparent border-0 px-4 py-3.5 pr-24 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-0 sm:text-sm min-h-[52px] max-h-[150px]" placeholder="Message ChatVeu..."></textarea>
                     
-                    <div class="absolute right-2 bottom-2 flex items-center">
-                        <button id="send-btn" class="p-1.5 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:bg-gray-300 dark:disabled:bg-gray-700 focus:outline-none" disabled>
+                    <div class="absolute right-2 bottom-2 flex items-center gap-1">
+                        <!-- Mic Button -->
+                        <button id="mic-btn" class="p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all focus:outline-none">
+                            <i data-lucide="mic" class="w-5 h-5"></i>
+                        </button>
+                        <!-- Send Button -->
+                        <button id="send-btn" class="p-1.5 rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:bg-gray-300 dark:disabled:bg-gray-700 focus:outline-none" disabled>
                             <i data-lucide="arrow-up" class="w-5 h-5"></i>
                         </button>
                         <button id="stop-btn" class="hidden p-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors focus:outline-none">
@@ -157,7 +185,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="text-center mt-2">
+                <div class="text-center mt-2 flex justify-center items-center gap-2">
                     <span class="text-[10px] text-gray-400">AI can make mistakes. Verify important information.</span>
                 </div>
             </div>
@@ -178,7 +206,7 @@
                     <div>
                         <label class="block text-sm font-medium mb-1 dark:text-gray-200">Google Gemini API Key</label>
                         <div class="relative">
-                            <input type="password" id="api-key-input" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg pl-3 pr-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white" placeholder="AIzaSy...">
+                            <input type="password" id="api-key-input" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg pl-3 pr-10 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none dark:text-white" placeholder="AIzaSy...">
                             <button type="button" id="toggle-api-key" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700">
                                 <i data-lucide="eye" class="w-4 h-4" id="eye-icon"></i>
                             </button>
@@ -187,17 +215,17 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1 dark:text-gray-200">Model Name</label>
-                        <input type="text" id="model-input" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white" value="gemini-2.5-flash">
+                        <input type="text" id="model-input" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none dark:text-white" value="gemini-2.5-flash">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium mb-1 dark:text-gray-200">System Instructions</label>
-                        <textarea id="system-prompt-input" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white resize-none" placeholder="You are a helpful AI assistant..."></textarea>
+                        <textarea id="system-prompt-input" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none dark:text-white resize-none" placeholder="You are a helpful AI assistant..."></textarea>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium mb-1 dark:text-gray-200">Theme</label>
-                        <select id="theme-select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white">
+                        <select id="theme-select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none dark:text-white">
                             <option value="system">System Default</option>
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
@@ -210,21 +238,20 @@
                 <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex flex-wrap gap-2 justify-end">
                     <button id="clear-data-btn" class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg mr-auto">Clear Data</button>
                     <button id="test-connection-btn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Test</button>
-                    <button id="save-settings-btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Save</button>
+                    <button id="save-settings-btn" class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700">Save</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Application Script (Bulletproof Initialization) -->
     <script>
-        // Global Error Catcher - If anything fails, it shows on the screen instead of infinite loading.
+        // Global Error Catcher
         window.onerror = function(msg, url, lineNo, columnNo, error) {
             const loadText = document.getElementById('loading-text');
             const spinner = document.getElementById('loading-spinner');
-            if (loadText) {
+            if (loadText && els['app']?.classList.contains('hidden')) {
                 if (spinner) spinner.style.display = 'none';
-                loadText.innerHTML = `<span style="color:#ef4444; font-weight:bold;">Error details:</span><br><span style="font-size:12px; color:#ef4444;">${msg}</span><br><br><span style="font-size:12px; color:#6b7280;">Please refresh the page.</span>`;
+                loadText.innerHTML = `<span style="color:#ef4444; font-weight:bold;">Error details:</span><br><span style="font-size:12px; color:#ef4444;">${msg}</span>`;
             }
             return false;
         };
@@ -232,41 +259,42 @@
         const AppState = {
             apiKey: '', modelName: 'gemini-2.5-flash', systemPrompt: '', theme: 'system',
             chats: {}, currentChatId: null, isGenerating: false, abortController: null,
+            voiceEnabled: false, isListening: false
         };
         const els = {};
 
-        // MAIN INITIALIZATION - Runs instantly without waiting for DOMContentLoaded
+        // Speech Recognition Setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-IN'; // Works well for Hindi/Hinglish/English mixed in India
+        }
+
         function bootApplication() {
             try {
-                // 1. Grab all elements safely
-                const ids = ['app', 'loading', 'loading-text', 'sidebar', 'sidebar-backdrop', 'open-sidebar', 'close-sidebar', 'chat-search', 'chat-list', 'new-chat-btn', 'chat-container', 'empty-state', 'messages-wrapper', 'current-chat-title', 'message-input', 'send-btn', 'stop-btn', 'error-toast', 'settings-btn', 'header-settings-btn', 'settings-modal', 'close-settings', 'settings-backdrop', 'api-key-input', 'model-input', 'system-prompt-input', 'theme-select', 'toggle-api-key', 'eye-icon', 'save-settings-btn', 'test-connection-btn', 'clear-data-btn', 'settings-status'];
+                const ids = ['app', 'loading', 'loading-text', 'sidebar', 'sidebar-backdrop', 'open-sidebar', 'close-sidebar', 'chat-search', 'chat-list', 'new-chat-btn', 'chat-container', 'empty-state', 'messages-wrapper', 'current-chat-title', 'message-input', 'send-btn', 'stop-btn', 'mic-btn', 'voice-toggle-btn', 'voice-icon', 'error-toast', 'settings-btn', 'header-settings-btn', 'settings-modal', 'close-settings', 'settings-backdrop', 'api-key-input', 'model-input', 'system-prompt-input', 'theme-select', 'toggle-api-key', 'eye-icon', 'save-settings-btn', 'test-connection-btn', 'clear-data-btn', 'settings-status'];
                 
                 for (let i = 0; i < ids.length; i++) {
                     els[ids[i]] = document.getElementById(ids[i]);
-                    if (!els[ids[i]]) throw new Error(`HTML Element Missing: ${ids[i]}`);
+                    if (!els[ids[i]]) throw new Error(`Missing: ${ids[i]}`);
                 }
 
-                // 2. Initialize Icons safely
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
 
-                // 3. Load Storage & Theme
                 loadStorage();
                 applyTheme(AppState.theme);
                 
-                // 4. Load Chats
                 const sortedChatIds = Object.keys(AppState.chats).sort((a,b) => (AppState.chats[b].updatedAt || 0) - (AppState.chats[a].updatedAt || 0));
-                if (sortedChatIds.length > 0) {
-                    loadChat(sortedChatIds[0]);
-                } else {
-                    createNewChat();
-                }
+                if (sortedChatIds.length > 0) loadChat(sortedChatIds[0]);
+                else createNewChat();
                 
                 renderChatList();
                 setupEventListeners();
+                setupVoiceFeatures();
 
-                // 5. Hide Loader smoothly
                 setTimeout(() => {
                     els['loading'].style.opacity = '0';
                     els['app'].classList.remove('hidden');
@@ -279,15 +307,10 @@
             } catch (error) {
                 console.error("Boot Error:", error);
                 const loadText = document.getElementById('loading-text');
-                const spinner = document.getElementById('loading-spinner');
-                if (loadText) {
-                    if (spinner) spinner.style.display = 'none';
-                    loadText.innerHTML = `<span style="color:#ef4444; font-weight:bold;">Initialization Failed</span><br><span style="font-size:12px; color:#ef4444;">${error.message}</span>`;
-                }
+                if (loadText) loadText.innerHTML = `<span style="color:#ef4444;">Init Failed: ${error.message}</span>`;
             }
         }
 
-        // --- Core Functions ---
         function loadStorage() {
             try {
                 AppState.apiKey = localStorage.getItem('chatveu_apiKey') || '';
@@ -296,10 +319,7 @@
                 AppState.theme = localStorage.getItem('chatveu_theme') || 'system';
                 const data = localStorage.getItem('chatveu_chats');
                 AppState.chats = data ? JSON.parse(data) : {};
-            } catch (e) {
-                console.warn('Storage error, starting fresh.');
-                AppState.chats = {};
-            }
+            } catch (e) { AppState.chats = {}; }
         }
 
         function saveStorage() {
@@ -309,9 +329,7 @@
                 localStorage.setItem('chatveu_systemPrompt', AppState.systemPrompt);
                 localStorage.setItem('chatveu_theme', AppState.theme);
                 localStorage.setItem('chatveu_chats', JSON.stringify(AppState.chats));
-            } catch (e) {
-                showErrorToast('Device Storage Full!');
-            }
+            } catch (e) { showErrorToast('Storage Full!'); }
         }
 
         function applyTheme(theme) {
@@ -322,35 +340,27 @@
             }
         }
 
-        function escapeHTML(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t]));
-        }
+        function escapeHTML(str) { return String(str || '').replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t])); }
 
         function sanitizeMarkdown(text) {
             try {
                 if (!text) return '';
-                if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-                    return DOMPurify.sanitize(marked.parse(text), { USE_PROFILES: { html: true } });
-                }
+                if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(marked.parse(text), { USE_PROFILES: { html: true } });
                 return escapeHTML(text);
-            } catch (e) {
-                return escapeHTML(text);
-            }
+            } catch (e) { return escapeHTML(text); }
         }
 
-        // --- Chat Operations ---
         function createNewChat() {
             const id = Date.now().toString();
             AppState.chats[id] = { id, title: 'New Chat', messages: [], systemPrompt: AppState.systemPrompt, updatedAt: Date.now() };
-            saveStorage();
-            loadChat(id);
+            saveStorage(); loadChat(id);
             if (window.innerWidth < 1024) toggleSidebar(false);
         }
 
         function loadChat(id) {
             if (!AppState.chats[id]) return;
             if (AppState.isGenerating) stopGeneration();
+            stopVoice(); // Stop TTS if switching chat
             
             AppState.currentChatId = id;
             els['current-chat-title'].textContent = AppState.chats[id].title || 'Chat';
@@ -363,36 +373,25 @@
                 AppState.chats[id].messages.forEach(msg => appendMessage(msg.role, msg.text));
             }
             
-            scrollToBottom();
-            renderChatList();
-            updateInputState();
-            hideErrorToast();
+            scrollToBottom(); renderChatList(); updateInputState(); hideErrorToast();
         }
 
-        window.selectChat = (id) => {
-            loadChat(id);
-            if (window.innerWidth < 1024) toggleSidebar(false);
-        };
-
+        window.selectChat = (id) => { loadChat(id); if (window.innerWidth < 1024) toggleSidebar(false); };
         window.removeChat = (id, e) => {
             e.stopPropagation();
             if (confirm('Delete this conversation?')) {
-                delete AppState.chats[id];
-                saveStorage();
+                delete AppState.chats[id]; saveStorage();
                 if (AppState.currentChatId === id) {
                     const keys = Object.keys(AppState.chats);
                     keys.length > 0 ? loadChat(keys[0]) : createNewChat();
-                } else {
-                    renderChatList();
-                }
+                } else renderChatList();
             }
         };
 
         function renderChatList(filter = '') {
             const list = Object.values(AppState.chats).filter(c => {
-                const titleMatch = (c.title || '').toLowerCase().includes(filter.toLowerCase());
-                const msgMatch = (c.messages || []).some(m => (m.text || '').toLowerCase().includes(filter.toLowerCase()));
-                return titleMatch || msgMatch;
+                const f = filter.toLowerCase();
+                return (c.title || '').toLowerCase().includes(f) || (c.messages || []).some(m => (m.text || '').toLowerCase().includes(f));
             }).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
             els['chat-list'].innerHTML = list.map(c => `
@@ -413,32 +412,24 @@
             const wrapper = document.createElement('div');
             wrapper.className = 'flex w-full animate-fade-in-up';
             if (role === 'user') {
-                wrapper.innerHTML = `<div class="msg-user whitespace-pre-wrap break-words text-sm sm:text-base">${escapeHTML(text)}</div>`;
+                wrapper.innerHTML = `<div class="msg-user whitespace-pre-wrap text-sm sm:text-base">${escapeHTML(text)}</div>`;
             } else {
                 wrapper.innerHTML = `
                     <div class="flex gap-3 sm:gap-4 w-full">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-800 mt-1">
-                            <i data-lucide="sparkles" class="w-4 h-4 text-blue-500"></i>
+                        <div class="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center shrink-0 border border-brand-200 dark:border-brand-800 mt-1 text-brand-600 dark:text-brand-400">
+                            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </div>
                         <div class="msg-ai markdown-body flex-1 min-w-0 text-sm sm:text-base dark:text-gray-100">${sanitizeMarkdown(text)}</div>
                     </div>`;
             }
             els['messages-wrapper'].appendChild(wrapper);
-            if(typeof lucide !== 'undefined') lucide.createIcons({ root: wrapper });
             return wrapper;
         }
 
-        // --- Layout Helpers ---
         function scrollToBottom() { els['chat-container'].scrollTop = els['chat-container'].scrollHeight; }
         function toggleSidebar(show) {
-            if (show) {
-                els['sidebar'].classList.remove('-translate-x-full');
-                els['sidebar-backdrop'].classList.remove('hidden', 'opacity-0');
-            } else {
-                els['sidebar'].classList.add('-translate-x-full');
-                els['sidebar-backdrop'].classList.add('opacity-0');
-                setTimeout(() => els['sidebar-backdrop'].classList.add('hidden'), 300);
-            }
+            if (show) { els['sidebar'].classList.remove('-translate-x-full'); els['sidebar-backdrop'].classList.remove('hidden', 'opacity-0'); } 
+            else { els['sidebar'].classList.add('-translate-x-full'); els['sidebar-backdrop'].classList.add('opacity-0'); setTimeout(() => els['sidebar-backdrop'].classList.add('hidden'), 300); }
         }
         function showErrorToast(msg) { els['error-toast'].textContent = msg; els['error-toast'].classList.remove('hidden'); }
         function hideErrorToast() { els['error-toast'].classList.add('hidden'); els['error-toast'].textContent = ''; }
@@ -446,40 +437,115 @@
         function updateInputState() {
             const hasText = els['message-input'].value.trim().length > 0;
             els['send-btn'].disabled = !hasText || AppState.isGenerating;
+            
             if (AppState.isGenerating) {
                 els['send-btn'].classList.add('hidden');
                 els['stop-btn'].classList.remove('hidden');
+                els['mic-btn'].classList.add('hidden');
                 els['message-input'].disabled = true;
             } else {
                 els['send-btn'].classList.remove('hidden');
                 els['stop-btn'].classList.add('hidden');
+                els['mic-btn'].classList.remove('hidden');
                 els['message-input'].disabled = false;
                 els['message-input'].style.height = 'auto';
             }
         }
 
         function openSettings() {
-            els['api-key-input'].value = AppState.apiKey;
-            els['model-input'].value = AppState.modelName;
-            els['system-prompt-input'].value = AppState.systemPrompt;
-            els['theme-select'].value = AppState.theme;
-            els['settings-status'].classList.add('hidden');
-            els['settings-modal'].classList.remove('hidden');
-            els['settings-modal'].classList.add('flex');
+            els['api-key-input'].value = AppState.apiKey; els['model-input'].value = AppState.modelName;
+            els['system-prompt-input'].value = AppState.systemPrompt; els['theme-select'].value = AppState.theme;
+            els['settings-status'].classList.add('hidden'); els['settings-modal'].classList.remove('hidden'); els['settings-modal'].classList.add('flex');
         }
-        
-        function closeSettings() {
-            els['settings-modal'].classList.add('hidden');
-            els['settings-modal'].classList.remove('flex');
+        function closeSettings() { els['settings-modal'].classList.add('hidden'); els['settings-modal'].classList.remove('flex'); }
+
+        // --- Voice Features (STT / TTS) ---
+        function setupVoiceFeatures() {
+            // Voice Output Toggle
+            els['voice-toggle-btn'].addEventListener('click', () => {
+                AppState.voiceEnabled = !AppState.voiceEnabled;
+                if(AppState.voiceEnabled) {
+                    els['voice-icon'].setAttribute('data-lucide', 'volume-2');
+                    els['voice-toggle-btn'].classList.add('text-brand-500');
+                    els['voice-toggle-btn'].classList.remove('text-gray-400');
+                } else {
+                    els['voice-icon'].setAttribute('data-lucide', 'volume-x');
+                    els['voice-toggle-btn'].classList.remove('text-brand-500');
+                    els['voice-toggle-btn'].classList.add('text-gray-400');
+                    stopVoice();
+                }
+                if(typeof lucide !== 'undefined') lucide.createIcons({root: els['voice-toggle-btn']});
+            });
+
+            // Mic Input Setup
+            if (!recognition) {
+                els['mic-btn'].style.display = 'none'; // Hide if browser doesn't support Web Speech API
+                return;
+            }
+
+            recognition.onstart = () => {
+                AppState.isListening = true;
+                els['mic-btn'].classList.add('mic-active');
+                els['message-input'].placeholder = "Listening...";
+                stopVoice(); // Stop AI talking if user interrupts
+            };
+
+            recognition.onresult = (event) => {
+                let interim = '', final = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) final += event.results[i][0].transcript;
+                    else interim += event.results[i][0].transcript;
+                }
+                els['message-input'].value = final || interim;
+                updateInputState();
+            };
+
+            recognition.onend = () => {
+                AppState.isListening = false;
+                els['mic-btn'].classList.remove('mic-active');
+                els['message-input'].placeholder = "Message ChatVeu...";
+                if (els['message-input'].value.trim() && !AppState.isGenerating) {
+                    sendMessage(); // Auto send after speaking
+                }
+            };
+
+            recognition.onerror = (e) => {
+                console.error("Speech Recognition Error:", e);
+                AppState.isListening = false;
+                els['mic-btn'].classList.remove('mic-active');
+                els['message-input'].placeholder = "Message ChatVeu...";
+            };
+
+            els['mic-btn'].addEventListener('click', () => {
+                if (AppState.isListening) recognition.stop();
+                else recognition.start();
+            });
         }
 
-        // --- API Integration ---
+        // Clean text for TTS (remove Markdown symbols)
+        function cleanTextForSpeech(text) {
+            return text.replace(/[*_~`#]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1');
+        }
+
+        function speakAIResponse(text) {
+            if (!AppState.voiceEnabled || !window.speechSynthesis) return;
+            const cleanText = cleanTextForSpeech(text);
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.05;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopVoice() {
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+        }
+
+        // --- API Logic ---
         async function sendMessage() {
             const text = els['message-input'].value.trim();
             if (!text || AppState.isGenerating) return;
             if (!AppState.apiKey) { showErrorToast('Please add API Key in Settings.'); openSettings(); return; }
 
-            hideErrorToast();
+            hideErrorToast(); stopVoice();
             els['message-input'].value = '';
             
             const chat = AppState.chats[AppState.currentChatId];
@@ -489,37 +555,28 @@
             }
 
             chat.messages.push({ role: 'user', text });
-            chat.updatedAt = Date.now();
-            saveStorage();
-            appendMessage('user', text);
-            els['empty-state'].classList.add('hidden');
+            chat.updatedAt = Date.now(); saveStorage();
+            appendMessage('user', text); els['empty-state'].classList.add('hidden');
             
-            updateInputState();
-            scrollToBottom();
-            
-            await streamGemini(chat);
+            updateInputState(); scrollToBottom(); await streamGemini(chat);
         }
 
         async function streamGemini(chat) {
-            AppState.isGenerating = true;
-            updateInputState();
+            AppState.isGenerating = true; updateInputState();
             
             const wrapper = document.createElement('div');
             wrapper.className = 'flex w-full animate-fade-in-up gap-3 sm:gap-4';
             wrapper.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-800 mt-1">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-blue-500 animate-pulse"></i>
+                <div class="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center shrink-0 border border-brand-200 dark:border-brand-800 mt-1 text-brand-600 dark:text-brand-400">
+                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 animate-pulse"><path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
                 <div class="msg-ai markdown-body flex-1 min-w-0 text-sm sm:text-base dark:text-gray-100">
                     <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
                 </div>`;
             els['messages-wrapper'].appendChild(wrapper);
-            if(typeof lucide !== 'undefined') lucide.createIcons({ root: wrapper });
-            scrollToBottom();
-            const textContainer = wrapper.querySelector('.msg-ai');
+            scrollToBottom(); const textContainer = wrapper.querySelector('.msg-ai');
 
-            let aiText = '';
-            AppState.abortController = new AbortController();
+            let aiText = ''; AppState.abortController = new AbortController();
 
             try {
                 const payload = { contents: chat.messages.map(m => ({ role: m.role, parts: [{ text: m.text }] })) };
@@ -527,35 +584,27 @@
                 if (sysPrompt.trim()) payload.systemInstruction = { parts: [{ text: sysPrompt.trim() }] };
 
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AppState.modelName}:streamGenerateContent?alt=sse`, {
-                    method: 'POST',
-                    headers: { 'x-goog-api-key': AppState.apiKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    signal: AppState.abortController.signal
+                    method: 'POST', headers: { 'x-goog-api-key': AppState.apiKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload), signal: AppState.abortController.signal
                 });
 
                 if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
 
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                textContainer.innerHTML = ''; 
+                const reader = res.body.getReader(); const decoder = new TextDecoder(); let buffer = ''; textContainer.innerHTML = ''; 
                 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
                     buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop(); 
+                    const lines = buffer.split('\n'); buffer = lines.pop(); 
 
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
-                            const data = line.slice(6).trim();
-                            if (!data) continue;
+                            const data = line.slice(6).trim(); if (!data) continue;
                             try {
                                 const chunkText = JSON.parse(data).candidates?.[0]?.content?.parts?.[0]?.text;
                                 if (chunkText) {
-                                    aiText += chunkText;
-                                    textContainer.innerHTML = sanitizeMarkdown(aiText);
+                                    aiText += chunkText; textContainer.innerHTML = sanitizeMarkdown(aiText);
                                     if (els['chat-container'].scrollHeight - els['chat-container'].scrollTop < els['chat-container'].clientHeight + 150) scrollToBottom();
                                 }
                             } catch (e) {}
@@ -563,27 +612,24 @@
                     }
                 }
                 if (!aiText) throw new Error("Empty response from API.");
+                
+                // Voice reading after completion
+                speakAIResponse(aiText);
+
             } catch (error) {
-                if (error.name === 'AbortError') { aiText += '\n\n*(Generation stopped)*'; }
-                else {
-                    aiText = (aiText ? aiText + '\n\n' : '') + `**Error:** ${error.message}`;
-                    showErrorToast('Failed to generate response.');
-                }
+                if (error.name === 'AbortError') aiText += '\n\n*(Stopped)*';
+                else { aiText = (aiText ? aiText + '\n\n' : '') + `**Error:** ${error.message}`; showErrorToast('Failed to generate response.'); }
                 textContainer.innerHTML = sanitizeMarkdown(aiText);
             } finally {
-                AppState.isGenerating = false;
-                AppState.abortController = null;
+                AppState.isGenerating = false; AppState.abortController = null;
                 chat.messages.push({ role: 'model', text: aiText });
-                chat.updatedAt = Date.now();
-                saveStorage();
-                updateInputState();
-                renderChatList();
+                chat.updatedAt = Date.now(); saveStorage(); updateInputState(); renderChatList();
             }
         }
 
-        function stopGeneration() { if (AppState.abortController) AppState.abortController.abort(); }
+        function stopGeneration() { if (AppState.abortController) AppState.abortController.abort(); stopVoice(); }
 
-        // --- Listeners Setup ---
+        // --- Event Setup ---
         function setupEventListeners() {
             els['open-sidebar'].addEventListener('click', () => toggleSidebar(true));
             els['close-sidebar'].addEventListener('click', () => toggleSidebar(false));
@@ -603,55 +649,36 @@
                 if(typeof lucide !== 'undefined') lucide.createIcons({ root: els['toggle-api-key'] });
             });
 
-            els['clear-data-btn'].addEventListener('click', () => {
-                if(confirm('Clear all chats and settings permanently?')) { localStorage.clear(); location.reload(); }
-            });
-
+            els['clear-data-btn'].addEventListener('click', () => { if(confirm('Clear all chats?')) { localStorage.clear(); location.reload(); } });
             els['save-settings-btn'].addEventListener('click', () => {
-                AppState.apiKey = els['api-key-input'].value.trim();
-                AppState.modelName = els['model-input'].value.trim() || 'gemini-2.5-flash';
-                AppState.systemPrompt = els['system-prompt-input'].value.trim();
-                AppState.theme = els['theme-select'].value;
+                AppState.apiKey = els['api-key-input'].value.trim(); AppState.modelName = els['model-input'].value.trim() || 'gemini-2.5-flash';
+                AppState.systemPrompt = els['system-prompt-input'].value.trim(); AppState.theme = els['theme-select'].value;
                 saveStorage(); applyTheme(AppState.theme); closeSettings(); hideErrorToast(); renderChatList();
             });
 
             els['test-connection-btn'].addEventListener('click', async () => {
                 const key = els['api-key-input'].value.trim(), model = els['model-input'].value.trim() || 'gemini-2.5-flash', statusEl = els['settings-status'];
                 if (!key) { statusEl.className = 'block mt-4 p-2 rounded-lg text-sm bg-yellow-100 text-yellow-800'; statusEl.textContent = 'Enter API key.'; return; }
-                
-                statusEl.className = 'block mt-4 p-2 rounded-lg text-sm bg-blue-100 text-blue-800';
-                statusEl.textContent = 'Testing connection...';
-                
+                statusEl.className = 'block mt-4 p-2 rounded-lg text-sm bg-blue-100 text-blue-800'; statusEl.textContent = 'Testing connection...';
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
                         method: 'POST', headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "ping" }] }] })
                     });
                     if (res.ok) { statusEl.className = 'block mt-4 p-2 rounded-lg text-sm bg-green-100 text-green-800'; statusEl.textContent = 'API Key valid!'; }
-                    else { throw new Error((await res.json()).error?.message || `HTTP ${res.status}`); }
-                } catch (e) {
-                    statusEl.className = 'block mt-4 p-2 rounded-lg text-sm bg-red-100 text-red-800';
-                    statusEl.textContent = `Error: ${e.message}`;
-                }
+                    else throw new Error((await res.json()).error?.message || `HTTP ${res.status}`);
+                } catch (e) { statusEl.className = 'block mt-4 p-2 rounded-lg text-sm bg-red-100 text-red-800'; statusEl.textContent = `Error: ${e.message}`; }
             });
 
-            els['message-input'].addEventListener('input', function() {
-                this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';
-                updateInputState();
-            });
-            els['message-input'].addEventListener('keydown', e => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-            });
+            els['message-input'].addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; updateInputState(); });
+            els['message-input'].addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
             
             els['send-btn'].addEventListener('click', sendMessage);
             els['stop-btn'].addEventListener('click', stopGeneration);
-            
             window.addEventListener('resize', () => { if (window.innerWidth >= 1024) els['sidebar-backdrop'].classList.add('hidden'); });
         }
 
-        // START APP IMMEDIATELY
         bootApplication();
-
     </script>
 </body>
 </html>
