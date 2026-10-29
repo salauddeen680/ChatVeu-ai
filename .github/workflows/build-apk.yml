@@ -1,7 +1,7 @@
 name: Build Android APK Manually
 
 on:
-  workflow_dispatch: # यह पक्का करेगा कि यह सिर्फ आपके बटन दबाने पर ही चले, ऑटोमेटिक नहीं।
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -25,12 +25,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Prepare Web Directory (Fix for Capacitor)
+        run: |
+          mkdir www
+          cp index.html www/
+          if [ -f "logo.png" ]; then cp logo.png www/; fi
+
       - name: Initialize Capacitor Android Project
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/android
           npm install -D @capacitor/cli @capacitor/assets
-          npx cap init ChatVeu com.chatveu.app --web-dir .
+          npx cap init ChatVeu com.chatveu.app --web-dir www
           npx cap add android
 
       - name: Add Mic and Internet Permissions
@@ -57,3 +63,4 @@ jobs:
         with:
           name: ChatVeu-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          
