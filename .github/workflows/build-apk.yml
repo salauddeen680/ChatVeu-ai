@@ -25,39 +25,40 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # स्टेप 1: www फोल्डर बनाना और फाइलें कॉपी करना
+      # स्टेप 1: www फोल्डर बनाना
       - name: Create Web Directory & Copy Files
         run: |
           mkdir -p www
           cp index.html www/
           if [ -f "logo.png" ]; then cp logo.png www/; fi
 
-      # स्टेप 2: Capacitor को इनस्टॉल करना
+      # स्टेप 2: Capacitor इनस्टॉल करना
       - name: Install Dependencies
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/android
           npm install -D @capacitor/cli @capacitor/assets
 
-      # स्टेप 3: Capacitor को सही www फोल्डर के साथ शुरू करना
+      # स्टेप 3: Capacitor सेटअप
       - name: Initialize Capacitor
         run: |
           npx cap init ChatVeu com.chatveu.app --web-dir www
           npx cap add android
 
-      # स्टेप 4: माइक (Voice) और इंटरनेट की परमिशन डालना
+      # स्टेप 4: माइक (Voice) और इंटरनेट की परमिशन
       - name: Add Android Permissions
         run: |
           sed -i '/<application/i \    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-      # स्टेप 5: आपका लोगो सेट करना (अगर logo.png अपलोड किया है)
+      # स्टेप 5: आपका लोगो सेट करना (Fixed Command)
       - name: Generate App Icons
         run: |
           if [ -f "logo.png" ]; then
             echo "Custom logo found!"
             mkdir -p assets
             cp logo.png assets/icon.png
-            npx @capacitor/assets generate --icon
+            cp logo.png assets/splash.png
+            npx @capacitor/assets generate --android
           else
             echo "logo.png not found, using default logo."
           fi
@@ -70,7 +71,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # स्टेप 7: APK को डाउनलोड के लिए सेव करना
+      # स्टेप 7: APK अपलोड करना
       - name: Upload Final APK
         uses: actions/upload-artifact@v4
         with:
