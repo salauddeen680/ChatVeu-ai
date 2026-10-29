@@ -19,40 +19,34 @@ jobs:
         with:
           node-version: '20'
 
-      # FIX: Changed Java 17 to Java 21 for latest Capacitor support
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # स्टेप 1: www फोल्डर बनाना
       - name: Create Web Directory & Copy Files
         run: |
           mkdir -p www
           cp index.html www/
           if [ -f "logo.png" ]; then cp logo.png www/; fi
 
-      # स्टेप 2: Capacitor इनस्टॉल करना
       - name: Install Dependencies
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/android
           npm install -D @capacitor/cli @capacitor/assets
 
-      # स्टेप 3: Capacitor सेटअप
       - name: Initialize Capacitor
         run: |
           npx cap init ChatVeu com.chatveu.app --web-dir www
           npx cap add android
 
-      # स्टेप 4: माइक (Voice) और इंटरनेट की परमिशन
       - name: Add Android Permissions
         run: |
           sed -i '/<application/i \    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-      # स्टेप 5: आपका लोगो सेट करना
-      - name: Generate App Icons
+      - name: Set Custom Logo
         run: |
           if [ -f "logo.png" ]; then
             echo "Custom logo found!"
@@ -60,11 +54,21 @@ jobs:
             cp logo.png assets/icon.png
             cp logo.png assets/splash.png
             npx @capacitor/assets generate --android
-          else
-            echo "logo.png not found, using default logo."
           fi
 
-      # स्टेप 6: APK बिल्ड करना
+      # यह स्टेप Kotlin के Duplicate एरर को हमेशा के लिए जड़ से खत्म कर देगा
+      - name: Fix Kotlin Duplicate Class Error
+        run: |
+          cat <<EOF >> android/app/build.gradle
+          
+          configurations.all {
+              resolutionStrategy {
+                  exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+                  exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+              }
+          }
+          EOF
+
       - name: Build APK
         run: |
           npx cap sync android
@@ -72,7 +76,6 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # स्टेप 7: APK अपलोड करना
       - name: Upload Final APK
         uses: actions/upload-artifact@v4
         with:
