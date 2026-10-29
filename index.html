@@ -14,74 +14,56 @@
                 extend: {
                     colors: {
                         gray: { 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827', 950: '#030712' }
-                    },
-                    typography: {
-                        DEFAULT: {
-                            css: {
-                                maxWidth: '100%',
-                                p: { marginTop: '0.5em', marginBottom: '0.5em' },
-                                pre: { padding: '1rem', backgroundColor: '#1f2937', color: '#f3f4f6', borderRadius: '0.5rem', overflowX: 'auto' },
-                                code: { backgroundColor: 'rgba(115, 115, 115, 0.1)', padding: '0.2em 0.4em', borderRadius: '0.25rem', fontSize: '0.875em' }
-                            }
-                        }
                     }
                 }
             }
         }
     </script>
 
-    <!-- External Libraries with safe fallbacks in JS -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <!-- External Libraries (Lucide, Marked, DOMPurify) -->
+    <script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
 
     <style>
         :root { --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px); }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; color: #111827; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; color: #111827; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         html.dark body { background-color: #111827; color: #f3f4f6; }
         
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
         html.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-
+        
         /* Loader */
-        #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background-color: #ffffff; z-index: 9999; font-weight: 500; font-size: 1.125rem; color: #374151; transition: opacity 0.3s ease; flex-direction: column; gap: 1rem; }
-        html.dark #loading { background-color: #111827; color: #e5e7eb; }
-        .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+        #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background-color: #ffffff; z-index: 9999; flex-direction: column; gap: 1rem; transition: opacity 0.4s ease; }
+        html.dark #loading { background-color: #111827; }
+        .spinner { width: 36px; height: 36px; border: 4px solid #e5e7eb; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         html.dark .spinner { border-color: #374151; border-top-color: #60a5fa; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Markdown Styling */
-        .markdown-body h1 { font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-        .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; }
-        .markdown-body h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
         .markdown-body p { margin-bottom: 0.75rem; line-height: 1.6; }
-        .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
-        .markdown-body ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
         .markdown-body pre { background-color: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
-        .markdown-body code { background-color: rgba(156, 163, 175, 0.2); padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.875em; }
+        .markdown-body code { background-color: rgba(156, 163, 175, 0.2); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.875em; }
         .markdown-body pre code { background-color: transparent; padding: 0; }
         .markdown-body a { color: #3b82f6; text-decoration: underline; }
-        .markdown-body table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-        .markdown-body th, .markdown-body td { border: 1px solid #d1d5db; padding: 0.5rem; text-align: left; }
-        html.dark .markdown-body th, html.dark .markdown-body td { border-color: #4b5563; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .markdown-body ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; }
 
-        /* App Layout */
-        .app-container { display: flex; min-height: 100dvh; width: 100%; overflow: hidden; }
-        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
-        .chat-area { flex: 1; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 2rem; }
+        /* Layout */
+        .app-container { display: flex; height: 100dvh; width: 100%; overflow: hidden; }
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
+        .chat-area { flex: 1; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 1rem; }
         textarea { resize: none; scrollbar-width: none; }
         textarea::-webkit-scrollbar { display: none; }
-        @media (max-width: 768px) { .sidebar-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); } }
 
         /* Messages */
-        .msg-user { background-color: #f3f4f6; color: #111827; border-radius: 1.5rem; border-bottom-right-radius: 0.5rem; padding: 0.75rem 1.25rem; max-width: 85%; margin-left: auto; }
+        .msg-user { background-color: #f3f4f6; color: #111827; border-radius: 1.5rem; border-bottom-right-radius: 0.5rem; padding: 0.75rem 1.25rem; max-width: 85%; margin-left: auto; word-wrap: break-word; }
         html.dark .msg-user { background-color: #374151; color: #f9fafb; }
-        .msg-ai { max-width: 100%; padding: 0.5rem 0; }
+        .msg-ai { max-width: 100%; padding: 0.25rem 0; word-wrap: break-word; overflow-x: hidden; }
         
-        .typing-dot { width: 6px; height: 6px; background-color: #9ca3af; border-radius: 50%; display: inline-block; animation: bounce 1.4s infinite ease-in-out both; }
+        .typing-dot { width: 6px; height: 6px; background-color: #9ca3af; border-radius: 50%; display: inline-block; animation: bounce 1.4s infinite ease-in-out both; margin-right: 3px; }
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
@@ -91,16 +73,20 @@
 
     <!-- Loading Screen -->
     <div id="loading">
-        <div class="spinner"></div>
-        <span id="loading-text">Loading ChatVeu...</span>
+        <div class="spinner" id="loading-spinner"></div>
+        <div id="loading-text" class="text-gray-700 dark:text-gray-300 font-medium text-center px-4">
+            Loading ChatVeu...
+        </div>
     </div>
 
     <!-- Main App -->
     <div id="app" class="app-container hidden opacity-0 transition-opacity duration-300">
-        <div id="sidebar-backdrop" class="fixed inset-0 z-40 sidebar-overlay hidden lg:hidden transition-opacity opacity-0"></div>
+        
+        <!-- Mobile Sidebar Backdrop -->
+        <div id="sidebar-backdrop" class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm hidden lg:hidden transition-opacity opacity-0"></div>
 
         <!-- Sidebar -->
-        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-72 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-72 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col h-full">
             <div class="p-4 flex items-center justify-between">
                 <h1 class="text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100 flex items-center gap-2">
                     <i data-lucide="sparkles" class="w-5 h-5 text-blue-500"></i> ChatVeu
@@ -111,7 +97,7 @@
             </div>
 
             <div class="px-4 pb-2">
-                <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-500 rounded-xl text-sm font-medium transition-colors shadow-sm focus:outline-none">
                     <i data-lucide="plus" class="w-4 h-4"></i> New Chat
                 </button>
             </div>
@@ -119,14 +105,14 @@
             <div class="px-4 py-2">
                 <div class="relative">
                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input type="text" id="chat-search" placeholder="Search chats..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-400">
+                    <input type="text" id="chat-search" placeholder="Search chats..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
                 </div>
             </div>
 
             <div class="flex-1 overflow-y-auto px-2 py-2 space-y-1" id="chat-list"></div>
 
             <div class="p-4 border-t border-gray-200 dark:border-gray-800">
-                <button id="settings-btn" class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="settings-btn" class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors focus:outline-none">
                     <i data-lucide="settings" class="w-4 h-4"></i> Settings
                 </button>
             </div>
@@ -134,33 +120,33 @@
 
         <!-- Main Content -->
         <main class="main-content bg-white dark:bg-gray-950">
-            <header class="h-14 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800/50 sticky top-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md z-10">
-                <div class="flex items-center gap-3">
-                    <button id="open-sidebar" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none lg:hidden">
+            <header class="h-14 flex shrink-0 items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md z-10">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <button id="open-sidebar" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none lg:hidden shrink-0">
                         <i data-lucide="menu" class="w-5 h-5"></i>
                     </button>
-                    <h2 id="current-chat-title" class="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px] sm:max-w-md">New Chat</h2>
+                    <h2 id="current-chat-title" class="font-medium text-gray-900 dark:text-gray-100 truncate">New Chat</h2>
                 </div>
-                <button id="header-settings-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden focus:outline-none">
+                <button id="header-settings-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden focus:outline-none shrink-0">
                     <i data-lucide="settings" class="w-5 h-5 text-gray-500"></i>
                 </button>
             </header>
 
             <div id="chat-container" class="chat-area px-4 sm:px-6 lg:px-8 py-6 w-full max-w-4xl mx-auto flex flex-col gap-6">
-                <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center mt-20">
+                <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center mt-10 sm:mt-20">
                     <div class="w-16 h-16 bg-blue-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
                         <i data-lucide="sparkles" class="w-8 h-8 text-blue-500"></i>
                     </div>
-                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">How can I help you today?</h2>
-                    <p class="text-gray-500 dark:text-gray-400 max-w-md">Enter a prompt below to start a conversation with Google Gemini.</p>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-2">How can I help you today?</h2>
+                    <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md">Enter a prompt below to start a conversation with Google Gemini.</p>
                 </div>
                 <div id="messages-wrapper" class="flex flex-col gap-6 pb-4"></div>
             </div>
 
-            <div class="p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-gray-950 dark:via-gray-950 sticky bottom-0 z-20 pb-[calc(1rem+var(--safe-area-inset-bottom))]">
-                <div class="max-w-3xl mx-auto relative rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all flex flex-col">
+            <div class="p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-gray-950 dark:via-gray-950 shrink-0 pb-[calc(1rem+var(--safe-area-inset-bottom))]">
+                <div class="max-w-3xl mx-auto relative rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all flex flex-col">
                     <div id="error-toast" class="hidden text-xs text-red-500 px-4 pt-2 font-medium"></div>
-                    <textarea id="message-input" rows="1" class="w-full bg-transparent border-0 px-4 py-3.5 pr-14 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-0 sm:text-sm min-h-[52px] max-h-[200px]" placeholder="Message ChatVeu..."></textarea>
+                    <textarea id="message-input" rows="1" class="w-full bg-transparent border-0 px-4 py-3.5 pr-14 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-0 sm:text-sm min-h-[52px] max-h-[150px]" placeholder="Message ChatVeu..."></textarea>
                     
                     <div class="absolute right-2 bottom-2 flex items-center">
                         <button id="send-btn" class="p-1.5 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:bg-gray-300 dark:disabled:bg-gray-700 focus:outline-none" disabled>
@@ -182,37 +168,36 @@
             <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" id="settings-backdrop"></div>
             <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[90dvh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-                    <h3 class="text-lg font-semibold">Settings</h3>
+                    <h3 class="text-lg font-semibold dark:text-white">Settings</h3>
                     <button id="close-settings" class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
                         <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
                     </button>
                 </div>
                 
-                <div class="p-4 overflow-y-auto space-y-5 flex-1">
+                <div class="p-4 overflow-y-auto space-y-4 flex-1">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Google Gemini API Key</label>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-200">Google Gemini API Key</label>
                         <div class="relative">
                             <input type="password" id="api-key-input" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg pl-3 pr-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white" placeholder="AIzaSy...">
                             <button type="button" id="toggle-api-key" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700">
                                 <i data-lucide="eye" class="w-4 h-4" id="eye-icon"></i>
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Stored locally in your browser.</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium mb-1">Model Name</label>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-200">Model Name</label>
                         <input type="text" id="model-input" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white" value="gemini-2.5-flash">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium mb-1">System Instructions</label>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-200">System Instructions</label>
                         <textarea id="system-prompt-input" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white resize-none" placeholder="You are a helpful AI assistant..."></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium mb-1">Theme</label>
-                        <select id="theme-select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white appearance-none">
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-200">Theme</label>
+                        <select id="theme-select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white">
                             <option value="system">System Default</option>
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
@@ -224,52 +209,64 @@
 
                 <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex flex-wrap gap-2 justify-end">
                     <button id="clear-data-btn" class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg mr-auto">Clear Data</button>
-                    <button id="test-connection-btn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50">Test</button>
+                    <button id="test-connection-btn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Test</button>
                     <button id="save-settings-btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Save</button>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- Application Script -->
+    <!-- Application Script (Bulletproof Initialization) -->
     <script>
+        // Global Error Catcher - If anything fails, it shows on the screen instead of infinite loading.
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            const loadText = document.getElementById('loading-text');
+            const spinner = document.getElementById('loading-spinner');
+            if (loadText) {
+                if (spinner) spinner.style.display = 'none';
+                loadText.innerHTML = `<span style="color:#ef4444; font-weight:bold;">Error details:</span><br><span style="font-size:12px; color:#ef4444;">${msg}</span><br><br><span style="font-size:12px; color:#6b7280;">Please refresh the page.</span>`;
+            }
+            return false;
+        };
+
         const AppState = {
             apiKey: '', modelName: 'gemini-2.5-flash', systemPrompt: '', theme: 'system',
             chats: {}, currentChatId: null, isGenerating: false, abortController: null,
         };
+        const els = {};
 
-        let els = {}; // Populated securely on boot
-
-        // Boot Application Safely
-        window.addEventListener('DOMContentLoaded', () => {
+        // MAIN INITIALIZATION - Runs instantly without waiting for DOMContentLoaded
+        function bootApplication() {
             try {
-                // Ensure all DOM nodes are connected
-                const requiredIds = ['app', 'loading', 'loading-text', 'sidebar', 'sidebar-backdrop', 'open-sidebar', 'close-sidebar', 'chat-search', 'chat-list', 'new-chat-btn', 'chat-container', 'empty-state', 'messages-wrapper', 'current-chat-title', 'message-input', 'send-btn', 'stop-btn', 'error-toast', 'settings-btn', 'header-settings-btn', 'settings-modal', 'close-settings', 'settings-backdrop', 'api-key-input', 'model-input', 'system-prompt-input', 'theme-select', 'toggle-api-key', 'eye-icon', 'save-settings-btn', 'test-connection-btn', 'clear-data-btn', 'settings-status'];
+                // 1. Grab all elements safely
+                const ids = ['app', 'loading', 'loading-text', 'sidebar', 'sidebar-backdrop', 'open-sidebar', 'close-sidebar', 'chat-search', 'chat-list', 'new-chat-btn', 'chat-container', 'empty-state', 'messages-wrapper', 'current-chat-title', 'message-input', 'send-btn', 'stop-btn', 'error-toast', 'settings-btn', 'header-settings-btn', 'settings-modal', 'close-settings', 'settings-backdrop', 'api-key-input', 'model-input', 'system-prompt-input', 'theme-select', 'toggle-api-key', 'eye-icon', 'save-settings-btn', 'test-connection-btn', 'clear-data-btn', 'settings-status'];
                 
-                requiredIds.forEach(id => {
-                    els[id] = document.getElementById(id);
-                    if(!els[id]) throw new Error(`Missing layout component: ${id}`);
-                });
+                for (let i = 0; i < ids.length; i++) {
+                    els[ids[i]] = document.getElementById(ids[i]);
+                    if (!els[ids[i]]) throw new Error(`HTML Element Missing: ${ids[i]}`);
+                }
 
-                // Trigger Icons safely
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                // 2. Initialize Icons safely
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
 
+                // 3. Load Storage & Theme
                 loadStorage();
                 applyTheme(AppState.theme);
-                renderChatList();
                 
+                // 4. Load Chats
                 const sortedChatIds = Object.keys(AppState.chats).sort((a,b) => (AppState.chats[b].updatedAt || 0) - (AppState.chats[a].updatedAt || 0));
-                
                 if (sortedChatIds.length > 0) {
                     loadChat(sortedChatIds[0]);
                 } else {
                     createNewChat();
                 }
-
+                
+                renderChatList();
                 setupEventListeners();
 
-                // Unmount loader smoothly
+                // 5. Hide Loader smoothly
                 setTimeout(() => {
                     els['loading'].style.opacity = '0';
                     els['app'].classList.remove('hidden');
@@ -277,16 +274,18 @@
                         els['loading'].style.display = 'none';
                         els['app'].classList.remove('opacity-0');
                     }, 300);
-                }, 400);
+                }, 100);
 
-            } catch (e) {
-                console.error("Initialization Failed:", e);
-                const loadingText = document.getElementById('loading-text');
-                if(loadingText) {
-                    loadingText.innerHTML = `<span class="text-red-500 font-bold">Error starting app:</span><br><span class="text-sm">${e.message}</span>`;
+            } catch (error) {
+                console.error("Boot Error:", error);
+                const loadText = document.getElementById('loading-text');
+                const spinner = document.getElementById('loading-spinner');
+                if (loadText) {
+                    if (spinner) spinner.style.display = 'none';
+                    loadText.innerHTML = `<span style="color:#ef4444; font-weight:bold;">Initialization Failed</span><br><span style="font-size:12px; color:#ef4444;">${error.message}</span>`;
                 }
             }
-        });
+        }
 
         // --- Core Functions ---
         function loadStorage() {
@@ -295,8 +294,15 @@
                 AppState.modelName = localStorage.getItem('chatveu_modelName') || 'gemini-2.5-flash';
                 AppState.systemPrompt = localStorage.getItem('chatveu_systemPrompt') || '';
                 AppState.theme = localStorage.getItem('chatveu_theme') || 'system';
-                
                 const data = localStorage.getItem('chatveu_chats');
                 AppState.chats = data ? JSON.parse(data) : {};
             } catch (e) {
-                console.war
+                console.warn('Storage error, starting fresh.');
+                AppState.chats = {};
+            }
+        }
+
+        function saveStorage() {
+            try {
+                localStorage.setItem('chatveu_apiKey', AppState.apiKey);
+                localStorage.setIt
