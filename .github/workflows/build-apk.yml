@@ -19,10 +19,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup Java 17
+      # FIX: Changed Java 17 to Java 21 for latest Capacitor support
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       # स्टेप 1: www फोल्डर बनाना
@@ -50,7 +51,7 @@ jobs:
         run: |
           sed -i '/<application/i \    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-      # स्टेप 5: आपका लोगो सेट करना (Fixed Command)
+      # स्टेप 5: आपका लोगो सेट करना
       - name: Generate App Icons
         run: |
           if [ -f "logo.png" ]; then
