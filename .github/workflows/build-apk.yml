@@ -1,0 +1,59 @@
+name: Build Android APK Manually
+
+on:
+  workflow_dispatch: # यह पक्का करेगा कि यह सिर्फ आपके बटन दबाने पर ही चले, ऑटोमेटिक नहीं।
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Initialize Capacitor Android Project
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/android
+          npm install -D @capacitor/cli @capacitor/assets
+          npx cap init ChatVeu com.chatveu.app --web-dir .
+          npx cap add android
+
+      - name: Add Mic and Internet Permissions
+        run: |
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
+
+      - name: Set Custom Logo
+        run: |
+          if [ -f "logo.png" ]; then
+            mkdir -p assets
+            cp logo.png assets/icon.png
+            npx @capacitor/assets generate --icon
+          fi
+
+      - name: Build Debug APK
+        run: |
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Save APK File
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChatVeu-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
